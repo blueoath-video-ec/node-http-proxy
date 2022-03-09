@@ -394,4 +394,33 @@ describe('lib/http-proxy/common.js', function () {
       expect(socketConfig.keepalive).to.eql(true);
     });
   });
+
+  describe('when using pathRewrites', function () {
+    it('should rewrite the path of the `req.url` besed on the conversion array.', function () {
+      var outgoing = {};
+      var myEndpoint = 'https://whatever.com/';
+      common.setupOutgoing(outgoing, {
+        target: url.parse(myEndpoint),
+        pathRewrites: [
+          {from: '/realtime', to: ''},
+        ]
+      }, { url: '/graphql/realtime' });
+
+      expect(outgoing.path).to.eql('/graphql');
+    });
+
+    it('should multi-rewrite the path of the `req.url` besed on the conversion array.', function () {
+      var outgoing = {};
+      var myEndpoint = 'https://whatever.com/some/crazy/path/whoooo';
+      common.setupOutgoing(outgoing, {
+        target: url.parse(myEndpoint),
+        pathRewrites: [
+          {from: '/crazy', to: '/normal'},
+          {from: '/normal/path', to: '/success'},
+        ]
+      }, { url: '/more/crazy/pathness' });
+
+      expect(outgoing.path).to.eql('/some/success/whoooo/more/successness');
+    });
+  });
 });
